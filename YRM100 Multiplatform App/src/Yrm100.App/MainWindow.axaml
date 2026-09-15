@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Yrm100.App.MainWindow"
+        Width="760" Height="520" MinWidth="600" MinHeight="420"
+        Title="YRM100 Reader">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="24" RowSpacing="16">
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <TextBlock Text="YRM100 Reader" FontSize="26" FontWeight="SemiBold" />
+      <TextBlock Text="shared protocol core" VerticalAlignment="Center" Opacity="0.6" />
+    </StackPanel>
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+      <ComboBox Name="PortBox" Watermark="Serial port" />
+      <Button Grid.Column="1" Content="Refresh" Click="RefreshPorts" />
+      <Button Grid.Column="2" Content="Connect" Click="Connect" />
+      <Button Grid.Column="3" Content="Disconnect" Click="Disconnect" />
+    </Grid>
+    <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
+      <Border BorderBrush="#D0D5DD" BorderThickness="1" CornerRadius="6" Padding="16">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Reader control" FontSize="18" FontWeight="SemiBold" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Content="Read once" Click="ReadOnce" />
+            <Button Content="Start inventory" Click="StartInventory" />
+            <Button Content="Stop" Click="StopInventory" />
+          </StackPanel>
+          <TextBlock Name="StatusText" Text="Disconnected" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" BorderBrush="#D0D5DD" BorderThickness="1" CornerRadius="6" Padding="16">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Latest tag" FontSize="18" FontWeight="SemiBold" />
+          <TextBlock Name="EpcText" Text="No tag read" FontFamily="monospace" TextWrapping="Wrap" />
+          <TextBlock Name="CrcText" Text="CRC: -" />
+          <TextBlock Name="RssiText" Text="RSSI: -" />
+        </StackPanel>
+      </Border>
+    </Grid>
+    <TextBlock Grid.Row="3" Name="LogText" Text="Ready. Connect a reader to begin." TextWrapping="Wrap" />
+  </Grid>
+</Window>

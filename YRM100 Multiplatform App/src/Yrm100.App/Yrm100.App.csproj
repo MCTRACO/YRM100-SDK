@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>net8.0;net8.0-android</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationManifest Condition="'$(TargetFramework)' == 'net8.0'">app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Yrm100.Protocol\Yrm100.Protocol.csproj" />
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageReference Include="Avalonia.Android" Version="11.2.3" Condition="'$(TargetFramework)' == 'net8.0-android'" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yrm100.Protocol", "src\Yrm100.Protocol\Yrm100.Protocol.csproj", "{A8D5AF67-8C3C-4D80-8B80-6A5FCDA2E5B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yrm100.App", "src\Yrm100.App\Yrm100.App.csproj", "{5BB68C1D-2E3B-456D-AE9C-BB8B8A0DD9EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yrm100.Protocol.Tests", "tests\Yrm100.Protocol.Tests\Yrm100.Protocol.Tests.csproj", "{1DA7DE84-390B-49BB-A5D9-34BCB2C47F0E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A8D5AF67-8C3C-4D80-8B80-6A5FCDA2E5B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8D5AF67-8C3C-4D80-8B80-6A5FCDA2E5B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8D5AF67-8C3C-4D80-8B80-6A5FCDA2E5B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8D5AF67-8C3C-4D80-8B80-6A5FCDA2E5B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BB68C1D-2E3B-456D-AE9C-BB8B8A0DD9EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BB68C1D-2E3B-456D-AE9C-BB8B8A0DD9EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BB68C1D-2E3B-456D-AE9C-BB8B8A0DD9EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BB68C1D-2E3B-456D-AE9C-BB8B8A0DD9EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DA7DE84-390B-49BB-A5D9-34BCB2C47F0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DA7DE84-390B-49BB-A5D9-34BCB2C47F0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DA7DE84-390B-49BB-A5D9-34BCB2C47F0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DA7DE84-390B-49BB-A5D9-34BCB2C47F0E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
