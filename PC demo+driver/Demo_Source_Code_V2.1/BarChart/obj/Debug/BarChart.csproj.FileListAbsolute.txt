@@ -1,0 +1,6 @@
+H:\work\FW_develop\temp\for_孚恩\TestReaderLib_V2.1\BarChart\bin\Debug\BarChart.dll
+H:\work\FW_develop\temp\for_孚恩\TestReaderLib_V2.1\BarChart\bin\Debug\BarChart.pdb
+H:\work\FW_develop\temp\for_孚恩\TestReaderLib_V2.1\BarChart\obj\Debug\BarChart.HBarChart.resources
+H:\work\FW_develop\temp\for_孚恩\TestReaderLib_V2.1\BarChart\obj\Debug\BarChart.csproj.GenerateResource.Cache
+H:\work\FW_develop\temp\for_孚恩\TestReaderLib_V2.1\BarChart\obj\Debug\BarChart.dll
+H:\work\FW_develop\temp\for_孚恩\TestReaderLib_V2.1\BarChart\obj\Debug\BarChart.pdb

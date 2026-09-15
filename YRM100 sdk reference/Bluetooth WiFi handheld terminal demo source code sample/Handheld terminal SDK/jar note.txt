@@ -1,0 +1,292 @@
+ZMDevice_20180829.rar ==> The new version of 20180829JAR is modified as follows:
+1. Increase the JAR version number, the interface is as follows: ZMAGetJarVer
+public static String ZMAGetJarVer();
+
+2. Modify the callback interface myCallReceive, and change the previous parameter output EPC to add one more parameter int as the command word cmd
+For example: cmd is 0x22 to output epc, only when it is 0x22, the EPC number is directly output, and other strings are output without parsing
+Get power 0xB7
+set power 0xB6
+E.g:
+//Set power command: BB 00 B6 00 02 0A 28 EA 7E (0A28=2600,26dbm) Successful return: BB 01 B6 00 01 00 B8 7E ==>26dbm(0A28->2600->26dbm)
+Then call the interface and return receive(0xB6, "BB01B6000100B87E");//Parse the latter, the format is shown in the protocol Header Type Command PL(MSB) PL(LSB) Parameter Checksum End 00 is correct, this example is correct
+
+3. Add single card reader interface listTagIDSingle
+/Send a single card reading If it returns 0, it means the sending is successful, otherwise it fails.
+public static int listTagIDSingle() throws IOException {
+The application layer only needs to call the listTagIDSingle method. If the tag is read, there will be data in the receive.
+Note: You need to send a command each time at a time, which is different from connecting to the card reader listTagIDMult interface
+
+
+The generated JAR is here
+ZMRfidApp\zmalib\build\intermediates\bundles\debug
+==>classes.jar
+
+
+1. ZMDevice is the class name
+Published as a jar package
+Here are some methods:
+
+1.testa is a test method, such as testa(12,34), the return value is: 58
+
+2.//Get power and return 0, it means the transmission is successful, otherwise it fails
+public static int ZMAGetPower(){
+
+3.//Set the power and return 0, it means the transmission is successful, otherwise it fails
+public static int ZMASetPower(int power) {
+
+4.//The card reading command continuously returns 0, it means the sending is successful, otherwise it fails
+public static int listTagIDMult() throws IOException {
+
+5.//Stop card reading and return 0, it means the sending is successful, otherwise it fails
+public static int listTagIDStop() throws IOException {
+
+
+For the time being, the first four methods are related to RFID.
+
+How to set up input stream, and output stream
+6. public static void SetInputStream(InputStream inmyStream){
+
+7. public void SetOutputStream(OutputStream outmyStream){
+
+The data sent is to write bytes to the input stream
+The received data is the bytes taken from the output stream
+
+
+When the BT is connected, there are instances of the input stream and output.
+How to know whether the hardware is working or not, and whether it is reflected, can be as follows:
+After the listTagIDMult is called, the small BT device will beep, beep, beep,,, (the premise is that the tag should also be placed nearby)
+After the listTagIDStop is called, the small torrent does not ring.
+
+So how to collect data below,
+There is a thread call to receive data, and then read the data and call it back through the interface applied in advance
+1. In the main program, in MainActivity.java
+First declare as follows:
+public static ZMDevice.myCallReceive myCallReceive = new ZMDevice.myCallReceive(){
+        @Override
+        public void receive(String strdat) {
+//Enter here, indicating that there is data
+
+        }
+    };
+    
+
+2. Assign ZMDevice zmd = new ZMDevice(); zmd.myReceive = myCallReceive;
+3. If the interface is tested, call zmd.testb(0); the above receive interface will pass in "abcd1234"
+
+4. If there is a card, it will also be the same, pass in the actual card number
+
+5. In the main program, the method ZMStartThread in the JAR package needs to be called, and then the thread starts to read data
+6. If you don't want to read data and receive data, you can stop the thread ZMStartStop to stop receiving data
+
+
+The following describes the workflow of the Bluetooth part:
+1. The main program is in MaimActivity.java
+Turn on bluetooth if not turned on
+And register registerReceiver(mReceiver, filter);
+
+2. Execute through the button btn_scan
+foundDevices.clear();
+                refreshList();
+                if (mBluetoothAdapter!=null) {
+                    mBluetoothAdapter.startDiscovery();
+                }
+                Clear the interface and start searching for BT at the same time
+
+3. Process in the broadcast callback
+ACTION_FOUND-->deviceFound(device); find the device
+ACTION_DISCOVERY_STARTED-->discoveryStarted(); Discovery Started
+ACTION_DISCOVERY_FINISHED-->discoveryEnded(); Discovery completed
+ACTION_BOND_STATE_CHANGED-->Pairing and connecting in the state. . .
+
+Find, find, end, etc. all need UI display, call refreshList();
+
+
+4. When you find the BT corresponding to the hardware, you need to manually click on the first bluetooth in the list to connect
+Handle in onItemClick event
+if not paired if (btDev.getBondState() == BluetoothDevice.BOND_NONE) {
+then deal with
+else connect directly } else if (currentDevice==null){
+                    //connect
+                    connect(btDev);
+                    
+When there is no pairing for the first time, or the Bluetooth in the system is not paired, the pairing method is executed, and the method is executed through a method that does not expose an API.
+Method createBondMethod;
+                    try {
+                        Class[] par = {};
+                        createBondMethod = BluetoothDevice.class.getMethod("createBond", par);
+                        returnValue = (Boolean) createBondMethod.invoke(btDev);
+You may need to enter the password for the first time. Once the password is correct and the pairing is OK, you do not need to enter it later. The possible input of mobile phones of different manufacturers may not be entered, depending on the
+Whether there is clipping in the android underlying system.
+If the connection is successful, refresh the list
+if (hasDeviceConnected(device)) {
+                //connectTextView.setText("Connected");
+
+                connectTextView.setText("Connected");
+                connectTextView.setTextColor(Color.GREEN);
+                statusImageView.setImageResource(R.drawable.ic_bluetooth_connected);
+            } else {
+                //connectTextView.setText("Disconnectd");
+                connectTextView.setText("Not connected");
+                connectTextView.setTextColor(Color.RED);
+                statusImageView.setImageResource(R.drawable.ic_bluetooth);
+            }
+            
+            Displays "Connected" or "Not Connected"
+            
+5. Last but not least,
+For some current mobile phones, the DEMO connection does not respond. Pay attention to the system interface and the incompatibility of the protocol.
+You must first open BT in the system, then find the corresponding BT, and pair it.
+At this time, go back to the app, search, and call the queryPairedDevices method mBluetoothAdapter.getBondedDevices();
+Once found, connect directly without entering a password. It's easy to connect.
+
+
+6. The whole code is not a lot, and the UI interface is added to display each Bluetooth and interact with the hardware.
+In the future, you will maintain this DEMO, and if there is any problem, you can modify it on the DEMO.
+-----------------------------------------------------------------------------------------------------------------
+ZMDevice_20180829.rar ==> 20180829JAR新版本修改如下:
+1.增加JAR版本号，接口如下:ZMAGetJarVer
+public static String ZMAGetJarVer();
+
+2.修改回调接口myCallReceive，将之前的一个参数输出EPC改为多加一个参数int为命令字cmd
+如：cmd为0x22即输出epc,  只有当为0x22时，直接输出EPC号码，其它输出无解析的字符串
+获取功率 0xB7
+设置功率 0xB6
+例如:
+//设置功率指令：BB 00 B6 00 02 0A 28 EA 7E 	 (0A28=2600,26dbm)	  成功返回：BB 01 B6 00 01 00 B8 7E 	==>26dbm(0A28->2600->26dbm)
+那么调用接口返回receive(0xB6, "BB01B6000100B87E");//解析后面这个，格式见协议Header Type Command PL(MSB) PL(LSB) Parameter Checksum End 00为正确，本例为正确
+
+3.加入单次读卡接口listTagIDSingle
+/发单次读卡 返回0则表示发送成功 否则失败
+	public static int listTagIDSingle() throws IOException {
+应用层只需要调用listTagIDSingle方法即可,如果读到标签则receive会有数据进来。
+注意：单次需要每次发命令 与 连接读卡listTagIDMult接口不同
+
+
+生成的JAR在这里
+ZMRfidApp\zmalib\build\intermediates\bundles\debug
+==>classes.jar
+
+
+1.ZMDevice 为类名
+以jar包的方式发布
+下面是一些方法:
+
+1.testa 为测试方法，如testa(12,34),返回值为:58
+
+2.//获取功率 返回0则表示发送成功 否则失败
+	public static int ZMAGetPower(){
+
+3.//设置功率 返回0则表示发送成功 否则失败
+	public static int ZMASetPower(int power) {
+
+4.//读卡命令连续 返回0则表示发送成功 否则失败
+	public static int listTagIDMult() throws IOException {
+
+5.//停止读卡 返回0则表示发送成功 否则失败
+	public static int listTagIDStop() throws IOException {
+
+
+暂时先四个方法，跟RFID有关的
+
+如何设置输入流，和输出流
+6.public static void SetInputStream(InputStream inmyStream){
+
+7.public void SetOutputStream(OutputStream outmyStream){
+
+发送的数据是向输入流中写入字节
+接收的数据是从输出流中取中字节
+
+
+当BT连上之后，输入流和输出输的实例就有了。
+如何知道硬件有没有工作，有没有反映，可以如下：
+listTagIDMult调用之后，小BT器会响，嘀嘀嘀，，，（前提标签也要放在附近哈）
+listTagIDStop调用之后，小BT器不响。
+
+那么下面如何收数据呢，
+收数据有一个线程调用，然后读到数据通过事先申请的接口调回
+1.在主程序中，MainActivity.java 中
+先申明如下：
+public static ZMDevice.myCallReceive myCallReceive =  new ZMDevice.myCallReceive(){
+        @Override
+        public void receive(String strdat) {
+//进入这里，表示有数据
+
+        }
+    };
+    
+
+2.赋值 ZMDevice zmd = new ZMDevice(); zmd.myReceive = myCallReceive;
+3.如果测试接口则调用 zmd.testb(0); 上面receive接口会将“abcd1234”传入
+
+4.如果有卡，则也会这样，传入实际的卡号
+
+5.主程序中，需要调用JAR包中的方法 ZMStartThread ,然后线程开始读数据
+6.如果不想读数据收数据，则可以停止线程 ZMStartStop 表示停止收数据
+
+
+下面介绍蓝牙部分的工作流程：
+1.主程序在MaimActivity.java中 
+如果没有开启则开启蓝牙
+并且进行注册 registerReceiver(mReceiver, filter);
+
+2.通过按钮btn_scan执行
+foundDevices.clear();
+                refreshList();
+                if (mBluetoothAdapter!=null) {
+                    mBluetoothAdapter.startDiscovery();
+                }
+                将界面清空，同时开始搜索BT
+
+3.在广播回调中进行处理
+ACTION_FOUND-->deviceFound(device); 找到设备
+ACTION_DISCOVERY_STARTED-->discoveryStarted(); 发现开始
+ACTION_DISCOVERY_FINISHED-->discoveryEnded();发现完成
+ACTION_BOND_STATE_CHANGED-->状态中进行配对,连接。。。
+
+找到，发现，结束等都需要UI显示, 调用refreshList();
+
+
+4.当找到对应硬件的BT，需要手动点击列表中一档蓝牙以进行连接
+onItemClick 事件中处理
+如果没有配对if (btDev.getBondState() == BluetoothDevice.BOND_NONE) {
+则处理
+否则直接连接} else if (currentDevice==null){
+                    //connect
+                    connect(btDev);
+                    
+当第一次没有配对，或系统中蓝牙没有配对，则执行配对方法，通过不公开API的方法执行
+Method createBondMethod;
+                    try {
+                        Class[] par = {};
+                        createBondMethod = BluetoothDevice.class.getMethod("createBond", par);
+                        returnValue = (Boolean) createBondMethod.invoke(btDev);
+第一次或许需要输入密码，一但密码正确，配对OK，则后面不需要，不同厂商手机的可能输入可能不输入，取决
+于android底层系统是否有裁剪。
+如果连接成功，则刷新列表
+if (hasDeviceConnected(device)) {
+                //connectTextView.setText("Connected");
+
+                connectTextView.setText("已连接");
+                connectTextView.setTextColor(Color.GREEN);
+                statusImageView.setImageResource(R.drawable.ic_bluetooth_connected);
+            } else {
+                //connectTextView.setText("Disconnectd");
+                connectTextView.setText("未连接");
+                connectTextView.setTextColor(Color.RED);
+                statusImageView.setImageResource(R.drawable.ic_bluetooth);
+            }
+            
+            显示"已连接"或"未连接"
+            
+5.最后需要注意的是，
+针对当前有些手机，DEMO连接没反应，注意的系统接口，协议不兼容造成，
+必须先在系统中打开BT，然后找到对应的BT，配对好。
+这时回到app中，搜索中，调用queryPairedDevices这个方法mBluetoothAdapter.getBondedDevices();
+找到后，不用输入密码，直接连接。很容易连上。
+
+
+6.整个代码不是很多，加了UI界面显示各个蓝牙，与硬件进行交互。
+以后就维护这个你们的DEMO，有什么问题就在DEMO上修改。
+
+                    
+

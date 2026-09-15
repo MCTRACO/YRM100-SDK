@@ -1,0 +1,5 @@
+Note:
+this YRM100 module has two USB connector optional with different USB driver:
+1, for blue USB connector: install "CP210x_Universal_Windows_Driver.zip"
+
+1, for black USB connector: install "CH341SER Drivers.EXE"

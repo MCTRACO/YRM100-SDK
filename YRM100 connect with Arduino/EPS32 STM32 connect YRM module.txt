@@ -1,0 +1,14 @@
+EPS32/STM32    YRM-RFID
+3.3V           5V(RED)+EN (GREEN)
+GND            GND(BLUE)
+B10            RXD(YELLOW)
+B11            TXD(BLACK)
+
+
+
+EPS32     USB-TTL
+
+3.3V      5V
+GND       GND
+A9        RXD
+A10       TXD
