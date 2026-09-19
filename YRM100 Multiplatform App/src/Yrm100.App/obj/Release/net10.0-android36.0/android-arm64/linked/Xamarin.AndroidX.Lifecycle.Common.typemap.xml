@@ -1,0 +1,15 @@
+<api type="release" assembly-name="Xamarin.AndroidX.Lifecycle.Common" mvid="ea62843ed27240bb94d6f19901430c58">
+  <module assembly-name="Xamarin.AndroidX.Lifecycle.Common" mvid="ea62843ed27240bb94d6f19901430c58" mvid-bytes="PoRi6nLSu0CU1vGZAUMMWA==">
+    <duplicates>
+      <entry java-name="androidx/lifecycle/LifecycleObserver" managed-type-name="AndroidX.Lifecycle.ILifecycleObserverInvoker" token="33554442" />
+      <entry java-name="androidx/lifecycle/LifecycleOwner" managed-type-name="AndroidX.Lifecycle.ILifecycleOwnerInvoker" token="33554444" />
+      <entry java-name="androidx/lifecycle/Lifecycle" managed-type-name="AndroidX.Lifecycle.LifecycleInvoker" token="33554445" />
+    </duplicates>
+    <types-scratch>
+      <entry key="androidx/lifecycle/Lifecycle" java-name="androidx/lifecycle/Lifecycle" managed-type-name="AndroidX.Lifecycle.Lifecycle" token="33554439" />
+      <entry key="androidx/lifecycle/Lifecycle$State" java-name="androidx/lifecycle/Lifecycle$State" managed-type-name="AndroidX.Lifecycle.Lifecycle/State" token="33554440" />
+      <entry key="androidx/lifecycle/LifecycleObserver" java-name="androidx/lifecycle/LifecycleObserver" managed-type-name="AndroidX.Lifecycle.ILifecycleObserver" token="33554441" skip-in-java-to-managed="True" />
+      <entry key="androidx/lifecycle/LifecycleOwner" java-name="androidx/lifecycle/LifecycleOwner" managed-type-name="AndroidX.Lifecycle.ILifecycleOwner" token="33554443" skip-in-java-to-managed="True" />
+    </types-scratch>
+  </module>
+</api>

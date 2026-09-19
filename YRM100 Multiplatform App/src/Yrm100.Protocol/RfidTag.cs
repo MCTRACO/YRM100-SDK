@@ -12,7 +12,8 @@ public static class InventoryDecoder
 {
     public static RfidTag? TryDecode(ReadOnlySpan<byte> frame)
     {
-        if (frame.Length < 10 || frame[0] != R200Protocol.Header || frame[^1] != R200Protocol.Footer) return null;
+        if (frame.Length < 10 || (frame[0] != R200Protocol.Header && frame[0] != Yrm1002Protocol.Header) ||
+            (frame[^1] != R200Protocol.Footer && frame[^1] != Yrm1002Protocol.Footer)) return null;
         var pcLengthBits = frame[6];
         var pcAndEpcLength = (pcLengthBits / 8 + 1) * 2;
         var epcLength = pcAndEpcLength - 2;

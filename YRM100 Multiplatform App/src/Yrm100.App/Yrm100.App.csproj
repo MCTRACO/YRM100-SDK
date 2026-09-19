@@ -1,17 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net8.0;net8.0-android</TargetFrameworks>
+    <AssemblyName>YRM100.Reader</AssemblyName>
+    <RootNamespace>Yrm100.App</RootNamespace>
+    <TargetFrameworks>net10.0;net10.0-android36.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest Condition="'$(TargetFramework)' == 'net8.0'">app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <OutputType>Exe</OutputType>
+    <AndroidFastDeploymentType>None</AndroidFastDeploymentType>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <RuntimeIdentifier>android-arm64</RuntimeIdentifier>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yrm100.Protocol\Yrm100.Protocol.csproj" />
     <PackageReference Include="Avalonia" Version="11.2.3" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <PackageReference Include="Avalonia.Android" Version="11.2.3" Condition="'$(TargetFramework)' == 'net8.0-android'" />
-    <PackageReference Include="System.IO.Ports" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Avalonia.Android" Version="11.2.3" Condition="$(TargetFramework.Contains('-android'))" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
   </ItemGroup>
 </Project>

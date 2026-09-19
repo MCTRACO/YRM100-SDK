@@ -1,0 +1,13 @@
+<api>
+  <jcw-types>
+    <type name="MainActivity" package="crc64276aef7033c9ac6a" application_java_class="android.app.Application" mono_runtime_initialization="mono.MonoPackageManager.LoadApplication (context);" extends_type="crc6431345fe65afe8d98.AvaloniaMainActivity_1" partial_assembly_qualified_name="Yrm100.App.MainActivity, YRM100.Reader">
+      <constructors>
+        <constructor name="MainActivity" method="n_.ctor:()V:" jni_signature="()V" managed_parameters="" retval="void" is_dynamically_registered="True" />
+        <constructor name="MainActivity" method="n_.ctor:(I)V:" jni_signature="(I)V" managed_parameters="System.Int32, System.Private.CoreLib" params="int p0" retval="void" is_dynamically_registered="True" super_call="p0" activate_call="p0" />
+      </constructors>
+    </type>
+  </jcw-types>
+  <acw-types partial-assembly-name="YRM100.Reader" module-name="YRM100.Reader.dll">
+    <type assembly-qualified-name="Yrm100.App.MainActivity, YRM100.Reader, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="yrm100.app.MainActivity" java-key="crc64276aef7033c9ac6a.MainActivity" managed-key="Yrm100.App.MainActivity" partial-assembly-qualified-name="Yrm100.App.MainActivity, YRM100.Reader" />
+  </acw-types>
+</api>

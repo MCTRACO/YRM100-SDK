@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using Xunit;
 using Yrm100.Protocol;
 
 namespace Yrm100.Protocol.Tests;
@@ -38,5 +41,21 @@ public sealed class R200ProtocolTests
 
         Assert.Single(frames);
         Assert.Equal(expected, frames[0]);
+    }
+
+    [Fact]
+    public void Yrm1002BuildsBlankUserWrite()
+    {
+        var frame = Yrm1002Protocol.WriteData([0, 0, 0, 0], 0x03, 0, new byte[8]);
+
+        Assert.Equal(new byte[] { 0xBB, 0x00, 0x49, 0x00, 0x11, 0, 0, 0, 0, 0x03, 0, 0, 0, 0x04, 0, 0, 0, 0, 0, 0, 0, 0, 0x61, 0x7E }, frame);
+    }
+
+    [Fact]
+    public void Yrm1002BuildsKillFrame()
+    {
+        var frame = Yrm1002Protocol.Kill([0, 0, 0xFF, 0xFF]);
+
+        Assert.Equal(new byte[] { 0xBB, 0x00, 0x65, 0x00, 0x04, 0, 0, 0xFF, 0xFF, 0x67, 0x7E }, frame);
     }
 }

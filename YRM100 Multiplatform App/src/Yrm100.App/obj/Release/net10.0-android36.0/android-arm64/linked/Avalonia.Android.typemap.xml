@@ -1,0 +1,17 @@
+<api type="release" assembly-name="Avalonia.Android" mvid="e68f85cb601a4007adb926618ea058a3">
+  <module assembly-name="Avalonia.Android" mvid="e68f85cb601a4007adb926618ea058a3" mvid-bytes="y4WP5hpgB0CtuSZhjqBYow==">
+    <types-scratch>
+      <entry key="crc6431345fe65afe8d98/AvaloniaActivity" java-name="crc6431345fe65afe8d98/AvaloniaActivity" managed-type-name="Avalonia.Android.AvaloniaActivity" token="33554445" />
+      <entry key="crc6431345fe65afe8d98/AvaloniaActivity_GlobalLayoutListener" java-name="crc6431345fe65afe8d98/AvaloniaActivity_GlobalLayoutListener" managed-type-name="Avalonia.Android.AvaloniaActivity/GlobalLayoutListener" token="33554446" />
+      <entry key="crc6431345fe65afe8d98/AvaloniaMainActivity_1" java-name="crc6431345fe65afe8d98/AvaloniaMainActivity_1" managed-type-name="Avalonia.Android.AvaloniaMainActivity`1" token="33554447" skip-in-java-to-managed="True" />
+      <entry key="crc6431345fe65afe8d98/AvaloniaMainActivity" java-name="crc6431345fe65afe8d98/AvaloniaMainActivity" managed-type-name="Avalonia.Android.AvaloniaMainActivity" token="33554448" />
+      <entry key="crc6431345fe65afe8d98/AvaloniaView" java-name="crc6431345fe65afe8d98/AvaloniaView" managed-type-name="Avalonia.Android.AvaloniaView" token="33554450" />
+      <entry key="crc6431345fe65afe8d98/ChoreographerTimer" java-name="crc6431345fe65afe8d98/ChoreographerTimer" managed-type-name="Avalonia.Android.ChoreographerTimer" token="33554452" />
+      <entry key="crc6431345fe65afe8d98/InvalidationAwareSurfaceView" java-name="crc6431345fe65afe8d98/InvalidationAwareSurfaceView" managed-type-name="Avalonia.Android.InvalidationAwareSurfaceView" token="33554460" />
+      <entry key="crc641fe58d40b3a958ab/AndroidInsetsManager" java-name="crc641fe58d40b3a958ab/AndroidInsetsManager" managed-type-name="Avalonia.Android.Platform.AndroidInsetsManager" token="33554466" />
+      <entry key="crc641fe58d40b3a958ab/AndroidScreens_DisplayListener" java-name="crc641fe58d40b3a958ab/AndroidScreens_DisplayListener" managed-type-name="Avalonia.Android.Platform.AndroidScreens/DisplayListener" token="33554475" />
+      <entry key="crc64bd239b21961e24ab/TopLevelImpl_ViewImpl" java-name="crc64bd239b21961e24ab/TopLevelImpl_ViewImpl" managed-type-name="Avalonia.Android.Platform.SkiaPlatform.TopLevelImpl/ViewImpl" token="33554501" />
+      <entry key="crc643ec2256bd5ff4bdb/AvaloniaInputConnection" java-name="crc643ec2256bd5ff4bdb/AvaloniaInputConnection" managed-type-name="Avalonia.Android.Platform.Input.AvaloniaInputConnection" token="33554506" />
+    </types-scratch>
+  </module>
+</api>

@@ -65,3 +65,59 @@ public static class R200Protocol
         return (byte)sum;
     }
 }
+
+/// <summary>YRM1002 command frames documented by the supplied SDK reference.</summary>
+public static class Yrm1002Protocol
+{
+    public const byte Header = 0xBB;
+    public const byte Footer = 0x7E;
+    public const byte CommandReadSingle = 0x22;
+    public const byte CommandReadMulti = 0x27;
+    public const byte CommandStopRead = 0x28;
+    public const byte CommandWriteData = 0x49;
+    public const byte CommandKill = 0x65;
+
+    public static byte[] ReadSingle() => Build(CommandReadSingle, []);
+
+    public static byte[] ReadMulti(ushort loopCount = 0x2710) =>
+        Build(CommandReadMulti, [0x22, (byte)(loopCount >> 8), (byte)loopCount]);
+
+    public static byte[] StopRead() => Build(CommandStopRead, []);
+
+    /// <summary>Writes whole 16-bit words to a tag memory bank.</summary>
+    public static byte[] WriteData(ReadOnlySpan<byte> accessPassword, byte memoryBank,
+        ushort startAddress, ReadOnlySpan<byte> data)
+    {
+        if (accessPassword.Length != 4) throw new ArgumentException("The access password must contain four bytes.", nameof(accessPassword));
+        if (data.Length == 0 || data.Length % 2 != 0) throw new ArgumentException("Write data must contain one or more whole words.", nameof(data));
+
+        var payload = new byte[9 + data.Length];
+        accessPassword.CopyTo(payload);
+        payload[4] = memoryBank;
+        payload[5] = (byte)(startAddress >> 8);
+        payload[6] = (byte)startAddress;
+        payload[7] = (byte)(data.Length / 2 >> 8);
+        payload[8] = (byte)(data.Length / 2);
+        data.CopyTo(payload.AsSpan(9));
+        return Build(CommandWriteData, payload);
+    }
+
+    public static byte[] Kill(ReadOnlySpan<byte> killPassword)
+    {
+        if (killPassword.Length != 4) throw new ArgumentException("The kill password must contain four bytes.", nameof(killPassword));
+        return Build(CommandKill, killPassword);
+    }
+
+    private static byte[] Build(byte command, ReadOnlySpan<byte> payload)
+    {
+        var frame = new byte[7 + payload.Length];
+        frame[0] = Header;
+        frame[2] = command;
+        frame[3] = (byte)(payload.Length >> 8);
+        frame[4] = (byte)payload.Length;
+        payload.CopyTo(frame.AsSpan(5));
+        frame[^2] = R200Protocol.Checksum(frame.AsSpan(1, frame.Length - 3));
+        frame[^1] = Footer;
+        return frame;
+    }
+}

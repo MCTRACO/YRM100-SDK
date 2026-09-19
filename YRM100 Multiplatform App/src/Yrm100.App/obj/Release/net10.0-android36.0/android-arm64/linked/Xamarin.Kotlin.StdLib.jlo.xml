@@ -1,0 +1,7 @@
+<api>
+  <acw-types partial-assembly-name="Xamarin.Kotlin.StdLib" module-name="Xamarin.Kotlin.StdLib.dll">
+    <type assembly-qualified-name="Kotlin.IFunction, Xamarin.Kotlin.StdLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="kotlin.Function" java-key="kotlin.Function" managed-key="Kotlin.IFunction" partial-assembly-qualified-name="Kotlin.IFunction, Xamarin.Kotlin.StdLib" />
+    <type assembly-qualified-name="Kotlin.Jvm.Functions.IFunction0, Xamarin.Kotlin.StdLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="kotlin.jvm.functions.Function0" java-key="kotlin.jvm.functions.Function0" managed-key="Kotlin.Jvm.Functions.IFunction0" partial-assembly-qualified-name="Kotlin.Jvm.Functions.IFunction0, Xamarin.Kotlin.StdLib" />
+    <type assembly-qualified-name="Kotlin.Jvm.Functions.IFunction1, Xamarin.Kotlin.StdLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="kotlin.jvm.functions.Function1" java-key="kotlin.jvm.functions.Function1" managed-key="Kotlin.Jvm.Functions.IFunction1" partial-assembly-qualified-name="Kotlin.Jvm.Functions.IFunction1, Xamarin.Kotlin.StdLib" />
+  </acw-types>
+</api>

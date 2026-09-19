@@ -11,4 +11,9 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
         .UsePlatformDetect().LogToTrace();
 }
+#else
+internal static class Program
+{
+    public static void Main(string[] args) { }
+}
 #endif

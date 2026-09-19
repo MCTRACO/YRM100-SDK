@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>YRM100.Reader</name>
+    </assembly>
+    <members>
+        <member name="M:Yrm100.App.MainWindow.InitializeComponent(System.Boolean)">
+            <summary>
+            Wires up the controls and optionally loads XAML markup and attaches dev tools (if Avalonia.Diagnostics package is referenced).
+            </summary>
+            <param name="loadXaml">Should the XAML be loaded into the component.</param>
+        </member>
+        <member name="T:Yrm100.App.SerialParity">
+            <summary>Parity options understood by the cross-platform serial boundary.</summary>
+        </member>
+        <member name="T:Yrm100.App.SerialStopBits">
+            <summary>Stop-bit options understood by the cross-platform serial boundary.</summary>
+        </member>
+        <member name="T:Yrm100.App.SerialSettings">
+            <summary>Serial connection settings shared by CH340 and CP210x USB-UART adapters.</summary>
+        </member>
+        <member name="M:Yrm100.App.SerialSettings.#ctor(System.Int32,System.Int32,Yrm100.App.SerialParity,Yrm100.App.SerialStopBits)">
+            <summary>Serial connection settings shared by CH340 and CP210x USB-UART adapters.</summary>
+        </member>
+        <member name="T:Yrm100.App.ISerialTransport">
+            <summary>Platform-neutral serial transport contract used by the reader UI.</summary>
+        </member>
+        <member name="T:Yrm100.App.AndroidUsbSerialTransport">
+            <summary>
+            Android USB Host transport for CH340 and CP210x USB-UART adapters.
+            </summary>
+        </member>
+        <member name="T:Yrm100.App.Resource">
+            <summary>
+            Android Resource Designer class.
+            Exposes the Android Resource designer assembly into the project Namespace.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Yrm100.Protocol/1.0.0": {
+        "runtime": {
+          "Yrm100.Protocol.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Yrm100.Protocol/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

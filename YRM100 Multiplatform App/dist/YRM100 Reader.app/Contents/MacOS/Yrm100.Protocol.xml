@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Yrm100.Protocol</name>
+    </assembly>
+    <members>
+        <member name="T:Yrm100.Protocol.FrameParser">
+            <summary>Incrementally extracts binary frames from arbitrary serial read chunks.</summary>
+        </member>
+        <member name="T:Yrm100.Protocol.R200Protocol">
+            <summary>Builds and validates the binary protocol used by the YRM100/R200 module.</summary>
+        </member>
+        <member name="M:Yrm100.Protocol.R200Protocol.WriteEpc(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Byte,System.UInt32)">
+            <summary>
+            Creates the 32-byte EPC write command used by the Arduino sample.
+            The tag's current CRC is required because it is part of the write payload.
+            </summary>
+        </member>
+        <member name="M:Yrm100.Protocol.R200Protocol.Checksum(System.ReadOnlySpan{System.Byte})">
+            <summary>Returns the least-significant byte of the sum of the supplied bytes.</summary>
+        </member>
+        <member name="T:Yrm100.Protocol.RfidTag">
+            <summary>Decoded tag data from an inventory response.</summary>
+        </member>
+        <member name="M:Yrm100.Protocol.RfidTag.#ctor(System.Byte[],System.Byte[],System.Byte[],System.SByte)">
+            <summary>Decoded tag data from an inventory response.</summary>
+        </member>
+        <member name="T:Yrm100.Protocol.InventoryDecoder">
+            <summary>Decodes the inventory response layout used by the existing C# sample.</summary>
+        </member>
+    </members>
+</doc>

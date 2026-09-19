@@ -1,40 +1,56 @@
-<Window xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="Yrm100.App.MainWindow"
-        Width="760" Height="520" MinWidth="600" MinHeight="420"
-        Title="YRM100 Reader">
-  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="24" RowSpacing="16">
-    <StackPanel Orientation="Horizontal" Spacing="12">
-      <TextBlock Text="YRM100 Reader" FontSize="26" FontWeight="SemiBold" />
-      <TextBlock Text="shared protocol core" VerticalAlignment="Center" Opacity="0.6" />
-    </StackPanel>
-    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
-      <ComboBox Name="PortBox" Watermark="Serial port" />
-      <Button Grid.Column="1" Content="Refresh" Click="RefreshPorts" />
-      <Button Grid.Column="2" Content="Connect" Click="Connect" />
-      <Button Grid.Column="3" Content="Disconnect" Click="Disconnect" />
-    </Grid>
-    <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="16">
-      <Border BorderBrush="#D0D5DD" BorderThickness="1" CornerRadius="6" Padding="16">
-        <StackPanel Spacing="12">
-          <TextBlock Text="Reader control" FontSize="18" FontWeight="SemiBold" />
-          <StackPanel Orientation="Horizontal" Spacing="10">
-            <Button Content="Read once" Click="ReadOnce" />
-            <Button Content="Start inventory" Click="StartInventory" />
-            <Button Content="Stop" Click="StopInventory" />
-          </StackPanel>
-          <TextBlock Name="StatusText" Text="Disconnected" />
+        x:Class="Yrm100.App.MainWindow">
+  <ScrollViewer>
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="18" MinWidth="320">
+      <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+        <StackPanel>
+          <TextBlock Text="YRM1002 FIELD SCAN" FontSize="22" FontWeight="Bold" />
+          <TextBlock Text="RFID tag radar" Opacity="0.6" />
         </StackPanel>
-      </Border>
-      <Border Grid.Column="1" BorderBrush="#D0D5DD" BorderThickness="1" CornerRadius="6" Padding="16">
-        <StackPanel Spacing="12">
-          <TextBlock Text="Latest tag" FontSize="18" FontWeight="SemiBold" />
-          <TextBlock Name="EpcText" Text="No tag read" FontFamily="monospace" TextWrapping="Wrap" />
+        <Border Grid.Column="1" Background="#DDF7E6" CornerRadius="14" Padding="10,5" VerticalAlignment="Center">
+          <TextBlock Name="StatusText" Text="DISCONNECTED" Foreground="#176B3A" FontSize="11" FontWeight="Bold" />
+        </Border>
+      </Grid>
+      <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,14">
+        <ComboBox Name="PortBox" MinWidth="120" HorizontalAlignment="Stretch" />
+        <Button Grid.Column="1" Content="Refresh" Click="RefreshPorts" Margin="8,0,0,0" />
+        <Button Grid.Column="2" Content="Connect" Click="Connect" Margin="8,0,0,0" />
+      </Grid>
+      <Grid Grid.Row="2" ColumnDefinitions="1.2*,*" RowDefinitions="Auto,*">
+        <Border Background="#101820" CornerRadius="12" Padding="12" MinHeight="310">
+          <Canvas Name="RadarCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Ellipse Width="260" Height="260" Stroke="#2A5360" StrokeThickness="1" />
+            <Ellipse Width="190" Height="190" Stroke="#2A5360" StrokeThickness="1" Canvas.Left="35" Canvas.Top="35" />
+            <Ellipse Width="120" Height="120" Stroke="#2A5360" StrokeThickness="1" Canvas.Left="70" Canvas.Top="70" />
+            <Line StartPoint="130,0" EndPoint="130,260" Stroke="#1D3C46" />
+            <Line StartPoint="0,130" EndPoint="260,130" Stroke="#1D3C46" />
+            <Ellipse Width="8" Height="8" Fill="#78F2A5" Canvas.Left="126" Canvas.Top="126" />
+            <Canvas Name="TagDots" />
+          </Canvas>
+        </Border>
+        <StackPanel Grid.Column="1" Spacing="10">
+          <TextBlock Text="SELECTED TAG" FontSize="12" FontWeight="Bold" Opacity="0.6" />
+          <TextBlock Name="EpcText" Text="No tag detected" FontFamily="monospace" TextWrapping="Wrap" />
           <TextBlock Name="CrcText" Text="CRC: -" />
           <TextBlock Name="RssiText" Text="RSSI: -" />
+          <TextBlock Name="CountText" Text="0 tags in sweep" Opacity="0.65" />
+          <Separator Margin="0,6" />
+          <TextBlock Text="READER" FontSize="12" FontWeight="Bold" Opacity="0.6" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Scan" Click="StartInventory" />
+            <Button Content="Read once" Click="ReadOnce" />
+            <Button Content="Stop" Click="StopInventory" />
+          </StackPanel>
+          <TextBlock Text="Access password (8 hex)" FontSize="12" />
+          <TextBox Name="AccessPasswordBox" Text="00000000" />
+          <Button Content="Write blank USER data" Click="WriteBlank" />
+          <TextBlock Text="Kill password (8 hex)" FontSize="12" />
+          <TextBox Name="KillPasswordBox" Text="0000FFFF" />
+          <Button Content="Kill selected tag" Click="KillTag" Background="#B3261E" Foreground="White" />
         </StackPanel>
-      </Border>
+      </Grid>
+      <TextBlock Grid.Row="3" Name="LogText" Text="Connect a USB reader to begin." TextWrapping="Wrap" Margin="0,14,0,0" Opacity="0.75" />
     </Grid>
-    <TextBlock Grid.Row="3" Name="LogText" Text="Ready. Connect a reader to begin." TextWrapping="Wrap" />
-  </Grid>
-</Window>
+  </ScrollViewer>
+</UserControl>

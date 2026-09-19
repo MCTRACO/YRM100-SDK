@@ -1,0 +1,7 @@
+<api type="release" assembly-name="YRM100.Reader" mvid="acfe6600fcd8438081a3ed1bb64f1a41">
+  <module assembly-name="YRM100.Reader" mvid="acfe6600fcd8438081a3ed1bb64f1a41" mvid-bytes="AGb+rNj8gEOBo+0btk8aQQ==">
+    <types-scratch>
+      <entry key="crc64276aef7033c9ac6a/MainActivity" java-name="crc64276aef7033c9ac6a/MainActivity" managed-type-name="Yrm100.App.MainActivity" token="33554435" />
+    </types-scratch>
+  </module>
+</api>
