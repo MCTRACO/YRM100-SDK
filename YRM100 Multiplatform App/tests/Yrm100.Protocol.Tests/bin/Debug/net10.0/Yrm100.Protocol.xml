@@ -22,6 +22,9 @@
         <member name="T:Yrm100.Protocol.Yrm1002Protocol">
             <summary>YRM1002 command frames documented by the supplied SDK reference.</summary>
         </member>
+        <member name="M:Yrm100.Protocol.Yrm1002Protocol.SetPower(System.Double)">
+            <summary>Sets PA output power in dBm times 100, as required by the YRM1003 SDK.</summary>
+        </member>
         <member name="M:Yrm100.Protocol.Yrm1002Protocol.WriteData(System.ReadOnlySpan{System.Byte},System.Byte,System.UInt16,System.ReadOnlySpan{System.Byte})">
             <summary>Writes whole 16-bit words to a tag memory bank.</summary>
         </member>

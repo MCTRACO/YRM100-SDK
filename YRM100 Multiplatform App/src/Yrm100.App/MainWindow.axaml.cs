@@ -33,49 +33,87 @@ public partial class MainWindow : UserControl
 #if ANDROID
     private void BuildAndroidView()
     {
-        PortBox = new ComboBox { MinWidth = 120 };
-        StatusText = new TextBlock { Text = "DISCONNECTED", FontSize = 11, FontWeight = FontWeight.Bold };
+        var ink = new SolidColorBrush(Color.Parse("#E7F0F2"));
+        var muted = new SolidColorBrush(Color.Parse("#94AEB4"));
+        var panel = new SolidColorBrush(Color.Parse("#16252B"));
+        var teal = new SolidColorBrush(Color.Parse("#72E0C0"));
+        var red = new SolidColorBrush(Color.Parse("#D76565"));
+
+        PortBox = new ComboBox { MinWidth = 120, Height = 48, HorizontalContentAlignment = HorizontalAlignment.Stretch };
+        StatusText = new TextBlock { Text = "DISCONNECTED", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted };
         EpcText = new TextBlock { Text = "No tag detected", FontFamily = "monospace", TextWrapping = TextWrapping.Wrap };
         CrcText = new TextBlock { Text = "CRC: -" };
         RssiText = new TextBlock { Text = "RSSI: -" };
         CountText = new TextBlock { Text = "0 tags in sweep" };
-        AccessPasswordBox = new TextBox { Text = "00000000" };
-        KillPasswordBox = new TextBox { Text = "0000FFFF" };
-        LogText = new TextBlock { Text = "Connect a USB reader to begin.", TextWrapping = TextWrapping.Wrap };
-        RadarCanvas = new Canvas { Width = 260, Height = 260 };
+        AccessPasswordBox = new TextBox { Text = "00000000", Height = 48, Watermark = "8 hex characters" };
+        KillPasswordBox = new TextBox { Text = "0000FFFF", Height = 48, Watermark = "8 hex characters" };
+        LogText = new TextBlock { Text = "Connect a USB reader to begin.", TextWrapping = TextWrapping.Wrap, Foreground = muted };
+        RadarCanvas = new Canvas { Width = 280, Height = 280, HorizontalAlignment = HorizontalAlignment.Center };
         TagDots = new Canvas();
-        RadarCanvas.Children.Add(new Ellipse { Width = 260, Height = 260, Stroke = new SolidColorBrush(Color.Parse("#2A5360")), StrokeThickness = 1 });
-        RadarCanvas.Children.Add(new Ellipse { Width = 190, Height = 190, Stroke = new SolidColorBrush(Color.Parse("#2A5360")), StrokeThickness = 1, [Canvas.LeftProperty] = 35, [Canvas.TopProperty] = 35 });
-        RadarCanvas.Children.Add(new Ellipse { Width = 120, Height = 120, Stroke = new SolidColorBrush(Color.Parse("#2A5360")), StrokeThickness = 1, [Canvas.LeftProperty] = 70, [Canvas.TopProperty] = 70 });
-        RadarCanvas.Children.Add(new Line { StartPoint = new Avalonia.Point(130, 0), EndPoint = new Avalonia.Point(130, 260), Stroke = new SolidColorBrush(Color.Parse("#1D3C46")) });
-        RadarCanvas.Children.Add(new Line { StartPoint = new Avalonia.Point(0, 130), EndPoint = new Avalonia.Point(260, 130), Stroke = new SolidColorBrush(Color.Parse("#1D3C46")) });
-        RadarCanvas.Children.Add(new Ellipse { Width = 8, Height = 8, Fill = new SolidColorBrush(Color.Parse("#78F2A5")), [Canvas.LeftProperty] = 126, [Canvas.TopProperty] = 126 });
+        RadarCanvas.Children.Add(new Ellipse { Width = 280, Height = 280, Stroke = new SolidColorBrush(Color.Parse("#2C5960")), StrokeThickness = 1 });
+        RadarCanvas.Children.Add(new Ellipse { Width = 210, Height = 210, Stroke = new SolidColorBrush(Color.Parse("#2C5960")), StrokeThickness = 1, [Canvas.LeftProperty] = 35, [Canvas.TopProperty] = 35 });
+        RadarCanvas.Children.Add(new Ellipse { Width = 140, Height = 140, Stroke = new SolidColorBrush(Color.Parse("#2C5960")), StrokeThickness = 1, [Canvas.LeftProperty] = 70, [Canvas.TopProperty] = 70 });
+        RadarCanvas.Children.Add(new Line { StartPoint = new Avalonia.Point(140, 0), EndPoint = new Avalonia.Point(140, 280), Stroke = new SolidColorBrush(Color.Parse("#1E3B42")) });
+        RadarCanvas.Children.Add(new Line { StartPoint = new Avalonia.Point(0, 140), EndPoint = new Avalonia.Point(280, 140), Stroke = new SolidColorBrush(Color.Parse("#1E3B42")) });
+        RadarCanvas.Children.Add(new Ellipse { Width = 10, Height = 10, Fill = teal, [Canvas.LeftProperty] = 135, [Canvas.TopProperty] = 135 });
         RadarCanvas.Children.Add(TagDots);
 
-        var refresh = new AvaloniaButton { Content = "Refresh" };
+        var refresh = new AvaloniaButton { Content = "Refresh", Height = 48 };
         refresh.Click += RefreshPorts;
-        var connect = new AvaloniaButton { Content = "Connect" };
+        var connect = new AvaloniaButton { Content = "Connect", Height = 48, Background = teal, Foreground = new SolidColorBrush(Color.Parse("#10252A")) };
         connect.Click += Connect;
-        var scan = new AvaloniaButton { Content = "Scan" };
+        var scan = new AvaloniaButton { Content = "Start scan", Height = 48, Background = teal, Foreground = new SolidColorBrush(Color.Parse("#10252A")) };
         scan.Click += StartInventory;
-        var once = new AvaloniaButton { Content = "Read once" };
+        var once = new AvaloniaButton { Content = "Read once", Height = 48 };
         once.Click += ReadOnce;
-        var stop = new AvaloniaButton { Content = "Stop" };
+        var stop = new AvaloniaButton { Content = "Stop", Height = 48 };
         stop.Click += StopInventory;
-        var blank = new AvaloniaButton { Content = "Write blank USER data" };
+        var blank = new AvaloniaButton { Content = "Write blank USER data", Height = 48 };
         blank.Click += WriteBlank;
-        var kill = new AvaloniaButton { Content = "Kill selected tag", Background = new SolidColorBrush(Color.Parse("#B3261E")), Foreground = Brushes.White };
+        var kill = new AvaloniaButton { Content = "Kill selected tag", Height = 48, Background = red, Foreground = Brushes.White };
         kill.Click += KillTag;
 
-        var top = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "YRM1002 FIELD SCAN", FontSize = 22, FontWeight = FontWeight.Bold }, new TextBlock { Text = "RFID tag radar" } } };
-        var ports = new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 8, Children = { PortBox, refresh, connect } };
-        var controls = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "SELECTED TAG", FontWeight = FontWeight.Bold }, EpcText, CrcText, RssiText, CountText, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 6, Children = { scan, once, stop } }, new TextBlock { Text = "Access password (8 hex)" }, AccessPasswordBox, blank, new TextBlock { Text = "Kill password (8 hex)" }, KillPasswordBox, kill } };
-        var body = new Grid { ColumnDefinitions = new ColumnDefinitions("1.2*,*") };
-        body.Children.Add(new Border { Background = new SolidColorBrush(Color.Parse("#101820")), Padding = new AvaloniaThickness(12), Child = RadarCanvas });
-        var right = new Border { Padding = new AvaloniaThickness(12), Child = controls };
-        Grid.SetColumn(right, 1);
-        body.Children.Add(right);
-        Content = new ScrollViewer { Content = new StackPanel { Spacing = 14, Margin = new AvaloniaThickness(18), Children = { top, ports, body, LogText } } };
+        var heading = new StackPanel { Spacing = 3, Children = { new TextBlock { Text = "YRM1003", FontSize = 28, FontWeight = FontWeight.Bold, Foreground = ink }, new TextBlock { Text = "FIELD SCAN  /  RFID RADAR", FontSize = 12, FontWeight = FontWeight.Bold, Foreground = teal } } };
+        var status = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(10), Padding = new AvaloniaThickness(12, 8), Child = StatusText };
+        var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { heading, status } };
+        Grid.SetColumn(status, 1);
+
+        var ports = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = { PortBox, refresh, connect } };
+        Grid.SetColumn(refresh, 1);
+        Grid.SetColumn(connect, 2);
+
+        var rangeValue = new TextBlock { Text = "75 cm  /  estimated 10.0 dBm", FontSize = 18, FontWeight = FontWeight.Bold, Foreground = ink };
+        var rangeSlider = new Slider { Minimum = 0, Maximum = 150, Value = 75, Height = 48, TickFrequency = 25, IsSnapToTickEnabled = true };
+        rangeSlider.ValueChanged += (_, args) =>
+        {
+            var centimeters = Math.Round(args.NewValue);
+            rangeValue.Text = $"{FormatDistance(centimeters)}  /  estimated {EstimatedPowerDbm(centimeters):0.0} dBm";
+        };
+        var applyRange = new AvaloniaButton { Content = "Apply antenna range", Height = 48, Background = teal, Foreground = new SolidColorBrush(Color.Parse("#10252A")) };
+        applyRange.Click += (_, _) => ApplyRangePower(rangeSlider.Value);
+        var rangePanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 7, Children = { new TextBlock { Text = "ANTENNA RANGE", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, new TextBlock { Text = "Ceramic antenna 2 dBi  /  max rated range 1.5 m", FontSize = 12, Foreground = muted, TextWrapping = TextWrapping.Wrap }, rangeValue, rangeSlider, new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = "0 cm", Foreground = muted }, new TextBlock { Text = "1.5 m", Foreground = muted, [Grid.ColumnProperty] = 1 } } }, applyRange } } };
+
+        var radarPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(10), Child = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Stretch, Children = { new TextBlock { Text = "LIVE FIELD", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center }, RadarCanvas, CountText } } };
+        var tagPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "SELECTED TAG", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, EpcText, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 18, Children = { CrcText, RssiText } } } } };
+        var readerActions = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "READER CONTROL", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, scan, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 8, Children = { once, stop } } } } };
+        var writeActions = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "TAG ACTIONS", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, new TextBlock { Text = "Access password", Foreground = muted }, AccessPasswordBox, blank, new TextBlock { Text = "Kill password", Foreground = muted }, KillPasswordBox, kill } } };
+
+        Content = new Border { Background = new SolidColorBrush(Color.Parse("#0C171B")), Child = new ScrollViewer { Content = new StackPanel { Spacing = 12, Margin = new AvaloniaThickness(14, 18), Children = { header, ports, radarPanel, rangePanel, tagPanel, readerActions, writeActions, LogText } } } };
+    }
+#endif
+
+#if ANDROID
+    private static double EstimatedPowerDbm(double centimeters) => Math.Clamp(centimeters / 150d * 20d, 0, 20);
+
+    private static string FormatDistance(double centimeters) => centimeters >= 100
+        ? $"{centimeters / 100:0.00} m"
+        : $"{centimeters:0} cm";
+
+    private void ApplyRangePower(double centimeters)
+    {
+        var powerDbm = EstimatedPowerDbm(centimeters);
+        Send(Yrm1002Protocol.SetPower(powerDbm));
+        LogText.Text = $"YRM1003 power set to {powerDbm:0.0} dBm for an estimated {FormatDistance(centimeters)} range.";
     }
 #endif
 
@@ -199,11 +237,11 @@ public partial class MainWindow : UserControl
     private void RedrawRadar()
     {
         TagDots.Children.Clear();
-        const double center = 130;
+        const double center = 140;
         var index = 0;
         foreach (var tag in tags.Values)
         {
-            var radius = Math.Clamp(82 - (tag.Rssi + 70) * 1.8, 16, 112);
+            var radius = Math.Clamp(96 - (tag.Rssi + 70) * 1.8, 16, 122);
             var angle = index++ * 2.399;
             var x = center + Math.Cos(angle) * radius - 7;
             var y = center + Math.Sin(angle) * radius - 7;

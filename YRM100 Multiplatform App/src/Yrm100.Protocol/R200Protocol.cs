@@ -76,6 +76,7 @@ public static class Yrm1002Protocol
     public const byte CommandStopRead = 0x28;
     public const byte CommandWriteData = 0x49;
     public const byte CommandKill = 0x65;
+    public const byte CommandSetPower = 0xB6;
 
     public static byte[] ReadSingle() => Build(CommandReadSingle, []);
 
@@ -83,6 +84,14 @@ public static class Yrm1002Protocol
         Build(CommandReadMulti, [0x22, (byte)(loopCount >> 8), (byte)loopCount]);
 
     public static byte[] StopRead() => Build(CommandStopRead, []);
+
+    /// <summary>Sets PA output power in dBm times 100, as required by the YRM1003 SDK.</summary>
+    public static byte[] SetPower(double powerDbm)
+    {
+        if (powerDbm is < 0 or > 30) throw new ArgumentOutOfRangeException(nameof(powerDbm), "Power must be between 0 and 30 dBm.");
+        var scaled = (ushort)Math.Round(powerDbm * 100, MidpointRounding.AwayFromZero);
+        return Build(CommandSetPower, [(byte)(scaled >> 8), (byte)scaled]);
+    }
 
     /// <summary>Writes whole 16-bit words to a tag memory bank.</summary>
     public static byte[] WriteData(ReadOnlySpan<byte> accessPassword, byte memoryBank,

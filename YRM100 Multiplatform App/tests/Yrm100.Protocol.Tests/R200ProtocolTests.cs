@@ -58,4 +58,12 @@ public sealed class R200ProtocolTests
 
         Assert.Equal(new byte[] { 0xBB, 0x00, 0x65, 0x00, 0x04, 0, 0, 0xFF, 0xFF, 0x67, 0x7E }, frame);
     }
+
+    [Fact]
+    public void Yrm1003BuildsPowerFrameInHundredthsOfDbm()
+    {
+        var frame = Yrm1002Protocol.SetPower(20);
+
+        Assert.Equal(new byte[] { 0xBB, 0x00, 0xB6, 0x00, 0x02, 0x07, 0xD0, 0x8F, 0x7E }, frame);
+    }
 }
