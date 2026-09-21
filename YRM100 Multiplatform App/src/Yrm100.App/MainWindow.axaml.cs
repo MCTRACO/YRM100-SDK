@@ -15,8 +15,21 @@ public partial class MainWindow : UserControl
 {
     private readonly ISerialTransport? transport;
     private readonly FrameParser parser = new(Yrm1002Protocol.Header, Yrm1002Protocol.Footer);
-    private readonly Dictionary<string, RfidTag> tags = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DetectedTagState> tags = new(StringComparer.OrdinalIgnoreCase);
     private RfidTag? selectedTag;
+    private bool inventoryRunning;
+#if ANDROID
+    private StackPanel? tagListPanel;
+    private TextBlock? liveCountText;
+    private DispatcherTimer? staleTagTimer;
+#endif
+
+    private sealed class DetectedTagState
+    {
+        public required RfidTag Tag { get; set; }
+        public int DetectionCount { get; set; }
+        public DateTime LastSeenUtc { get; set; }
+    }
 
     public MainWindow()
     {
@@ -82,7 +95,7 @@ public partial class MainWindow : UserControl
         Grid.SetColumn(refresh, 1);
         Grid.SetColumn(connect, 2);
 
-        var rangeValue = new TextBlock { Text = "75 cm  /  estimated 10.0 dBm", FontSize = 18, FontWeight = FontWeight.Bold, Foreground = ink };
+        var rangeValue = new TextBlock { Text = "75 cm  /  estimated 13.0 dBm", FontSize = 18, FontWeight = FontWeight.Bold, Foreground = ink };
         var rangeSlider = new Slider { Minimum = 0, Maximum = 150, Value = 75, Height = 48, TickFrequency = 25, IsSnapToTickEnabled = true };
         rangeSlider.ValueChanged += (_, args) =>
         {
@@ -95,15 +108,21 @@ public partial class MainWindow : UserControl
 
         var radarPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(10), Child = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Stretch, Children = { new TextBlock { Text = "LIVE FIELD", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center }, RadarCanvas, CountText } } };
         var tagPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "SELECTED TAG", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, EpcText, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 18, Children = { CrcText, RssiText } } } } };
+        liveCountText = new TextBlock { Text = "0 live tags", FontSize = 18, FontWeight = FontWeight.Bold, Foreground = ink };
+        tagListPanel = new StackPanel { Spacing = 6 };
+        var tagList = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "LIVE TAGS  /  NEAREST FIRST", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, liveCountText, tagListPanel } } };
         var readerActions = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "READER CONTROL", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, scan, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 8, Children = { once, stop } } } } };
         var writeActions = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "TAG ACTIONS", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, new TextBlock { Text = "Access password", Foreground = muted }, AccessPasswordBox, blank, new TextBlock { Text = "Kill password", Foreground = muted }, KillPasswordBox, kill } } };
 
-        Content = new Border { Background = new SolidColorBrush(Color.Parse("#0C171B")), Child = new ScrollViewer { Content = new StackPanel { Spacing = 12, Margin = new AvaloniaThickness(14, 18), Children = { header, ports, radarPanel, rangePanel, tagPanel, readerActions, writeActions, LogText } } } };
+        Content = new Border { Background = new SolidColorBrush(Color.Parse("#0C171B")), Child = new ScrollViewer { Content = new StackPanel { Spacing = 12, Margin = new AvaloniaThickness(14, 18), Children = { header, ports, radarPanel, rangePanel, tagPanel, tagList, readerActions, writeActions, LogText } } } };
+        staleTagTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        staleTagTimer.Tick += (_, _) => RemoveStaleTags();
+        staleTagTimer.Start();
     }
 #endif
 
 #if ANDROID
-    private static double EstimatedPowerDbm(double centimeters) => Math.Clamp(centimeters / 150d * 20d, 0, 20);
+    private static double EstimatedPowerDbm(double centimeters) => Math.Clamp(centimeters / 150d * 26d, 0, 26);
 
     private static string FormatDistance(double centimeters) => centimeters >= 100
         ? $"{centimeters / 100:0.00} m"
@@ -111,7 +130,18 @@ public partial class MainWindow : UserControl
 
     private void ApplyRangePower(double centimeters)
     {
+        if (transport is not { IsOpen: true })
+        {
+            LogText.Text = "Connect the reader before applying power.";
+            return;
+        }
+
         var powerDbm = EstimatedPowerDbm(centimeters);
+        if (inventoryRunning)
+        {
+            Send(Yrm1002Protocol.StopRead());
+            inventoryRunning = false;
+        }
         Send(Yrm1002Protocol.SetPower(powerDbm));
         LogText.Text = $"YRM1003 power set to {powerDbm:0.0} dBm for an estimated {FormatDistance(centimeters)} range.";
     }
@@ -173,8 +203,17 @@ public partial class MainWindow : UserControl
     }
 
     private void ReadOnce(object? sender, RoutedEventArgs e) => Send(Yrm1002Protocol.ReadSingle());
-    private void StartInventory(object? sender, RoutedEventArgs e) => Send(Yrm1002Protocol.ReadMulti());
-    private void StopInventory(object? sender, RoutedEventArgs e) => Send(Yrm1002Protocol.StopRead());
+    private void StartInventory(object? sender, RoutedEventArgs e)
+    {
+        Send(Yrm1002Protocol.ReadMulti());
+        inventoryRunning = true;
+    }
+
+    private void StopInventory(object? sender, RoutedEventArgs e)
+    {
+        Send(Yrm1002Protocol.StopRead());
+        inventoryRunning = false;
+    }
 
     private void WriteBlank(object? sender, RoutedEventArgs e)
     {
@@ -225,22 +264,71 @@ public partial class MainWindow : UserControl
 
     private void ShowTag(RfidTag tag)
     {
-        tags[tag.EpcHex] = tag;
+        if (!tags.TryGetValue(tag.EpcHex, out var state))
+        {
+            state = new DetectedTagState { Tag = tag, DetectionCount = 0 };
+            tags[tag.EpcHex] = state;
+        }
+
+        state.Tag = tag;
+        state.DetectionCount++;
+        state.LastSeenUtc = DateTime.UtcNow;
         selectedTag = tag;
         EpcText.Text = $"EPC: {tag.EpcHex}";
         CrcText.Text = $"CRC: {tag.CrcHex}";
         RssiText.Text = $"RSSI: {tag.Rssi} dBm";
-        CountText.Text = $"{tags.Count} tag{(tags.Count == 1 ? string.Empty : "s")} in sweep";
+        CountText.Text = $"{tags.Count} live tag{(tags.Count == 1 ? string.Empty : "s")}";
+    #if ANDROID
+        UpdateTagList();
+    #endif
         RedrawRadar();
     }
+
+#if ANDROID
+    private void RemoveStaleTags()
+    {
+        var cutoff = DateTime.UtcNow - TimeSpan.FromMilliseconds(1800);
+        var staleKeys = tags.Where(pair => pair.Value.LastSeenUtc < cutoff).Select(pair => pair.Key).ToArray();
+        if (staleKeys.Length == 0) return;
+
+        foreach (var key in staleKeys) tags.Remove(key);
+        if (selectedTag is not null && !tags.ContainsKey(selectedTag.EpcHex))
+        {
+            selectedTag = null;
+            EpcText.Text = "No tag detected";
+            CrcText.Text = "CRC: -";
+            RssiText.Text = "RSSI: -";
+        }
+
+        CountText.Text = $"{tags.Count} live tag{(tags.Count == 1 ? string.Empty : "s")}";
+        UpdateTagList();
+        RedrawRadar();
+    }
+
+    private void UpdateTagList()
+    {
+        if (tagListPanel is null || liveCountText is null) return;
+        tagListPanel.Children.Clear();
+        liveCountText.Text = $"{tags.Count} live tag{(tags.Count == 1 ? string.Empty : "s")}";
+
+        foreach (var state in tags.Values.OrderByDescending(state => state.Tag.Rssi).ThenBy(state => state.Tag.EpcHex, StringComparer.OrdinalIgnoreCase))
+        {
+            var epc = new TextBlock { Text = state.Tag.EpcHex, FontFamily = "monospace", FontSize = 13, TextWrapping = TextWrapping.Wrap };
+            var detail = new TextBlock { Text = $"{state.Tag.Rssi} dBm   /   {state.DetectionCount} detections", FontSize = 12, Foreground = new SolidColorBrush(Color.Parse("#94AEB4")) };
+            var row = new Border { Background = new SolidColorBrush(Color.Parse("#20343A")), CornerRadius = new Avalonia.CornerRadius(10), Padding = new AvaloniaThickness(10, 8), Child = new StackPanel { Spacing = 3, Children = { epc, detail } } };
+            tagListPanel.Children.Add(row);
+        }
+    }
+#endif
 
     private void RedrawRadar()
     {
         TagDots.Children.Clear();
         const double center = 140;
         var index = 0;
-        foreach (var tag in tags.Values)
+        foreach (var state in tags.Values)
         {
+            var tag = state.Tag;
             var radius = Math.Clamp(96 - (tag.Rssi + 70) * 1.8, 16, 122);
             var angle = index++ * 2.399;
             var x = center + Math.Cos(angle) * radius - 7;

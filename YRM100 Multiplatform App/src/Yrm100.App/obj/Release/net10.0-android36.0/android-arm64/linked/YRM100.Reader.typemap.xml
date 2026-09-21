@@ -1,5 +1,5 @@
-<api type="release" assembly-name="YRM100.Reader" mvid="3ac0c0f921d74204be9bae32f0bce48f">
-  <module assembly-name="YRM100.Reader" mvid="3ac0c0f921d74204be9bae32f0bce48f" mvid-bytes="+cDAOtchBEK+m64y8Lzkjw==">
+<api type="release" assembly-name="YRM100.Reader" mvid="ca5af947560f4904907089a130143fe5">
+  <module assembly-name="YRM100.Reader" mvid="ca5af947560f4904907089a130143fe5" mvid-bytes="R/layg9WBEmQcImhMBQ/5Q==">
     <types-scratch>
       <entry key="crc64276aef7033c9ac6a/MainActivity" java-name="crc64276aef7033c9ac6a/MainActivity" managed-type-name="Yrm100.App.MainActivity" token="33554435" />
     </types-scratch>
