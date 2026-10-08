@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Yrm100.Protocol")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e922d785c124d04f173944d9bfc316b27a96a5ae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+19077d9923f5dfa4c2f778d14b76161f06bb20fb")]
 [assembly: System.Reflection.AssemblyProductAttribute("Yrm100.Protocol")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Yrm100.Protocol")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

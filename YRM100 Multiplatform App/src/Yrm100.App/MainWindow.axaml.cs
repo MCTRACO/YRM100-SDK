@@ -20,17 +20,15 @@ public partial class MainWindow : UserControl
     private RfidTag? selectedTag;
     private bool inventoryRunning;
 #if ANDROID
-    private StackPanel? tagListPanel;
-    private TextBlock? liveCountText;
     private DispatcherTimer? staleTagTimer;
     private TextBlock? scanStatusText;
     private CancellationTokenSource startupCancellation = new();
+    private CancellationTokenSource powerChangeCancellation = new();
 #endif
 
     private sealed class DetectedTagState
     {
         public required RfidTag Tag { get; set; }
-        public int DetectionCount { get; set; }
         public DateTime LastSeenUtc { get; set; }
     }
 
@@ -63,7 +61,6 @@ public partial class MainWindow : UserControl
         EpcText = new TextBlock { Text = "No tag detected", FontFamily = "monospace", TextWrapping = TextWrapping.Wrap };
         CrcText = new TextBlock { Text = "CRC: -" };
         RssiText = new TextBlock { Text = "RSSI: -" };
-        CountText = new TextBlock { Text = "0 tags in sweep" };
         AccessPasswordBox = new TextBox { Text = "00000000", Height = 48, Watermark = "8 hex characters" };
         KillPasswordBox = new TextBox { Text = "0000FFFF", Height = 48, Watermark = "8 hex characters" };
         LogText = new TextBlock { Text = "Connect a USB reader to begin.", TextWrapping = TextWrapping.Wrap, Foreground = muted };
@@ -107,21 +104,42 @@ public partial class MainWindow : UserControl
         {
             var centimeters = Math.Round(args.NewValue);
             rangeValue.Text = $"{FormatDistance(centimeters)}  /  estimated {EstimatedPowerDbm(centimeters):0.0} dBm";
+            powerChangeCancellation.Cancel();
+            powerChangeCancellation.Dispose();
+            powerChangeCancellation = new CancellationTokenSource();
+            _ = ApplyRangePowerDebounced(centimeters, powerChangeCancellation.Token);
         };
-        var applyRange = new AvaloniaButton { Content = "Apply antenna range", Height = 48, Background = teal, Foreground = new SolidColorBrush(Color.Parse("#10252A")) };
-        applyRange.Click += (_, _) => ApplyRangePower(rangeSlider.Value);
-        var rangePanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 7, Children = { new TextBlock { Text = "ANTENNA RANGE", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, new TextBlock { Text = "Ceramic antenna 2 dBi  /  max rated range 1.5 m", FontSize = 12, Foreground = muted, TextWrapping = TextWrapping.Wrap }, rangeValue, rangeSlider, new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = "0 cm", Foreground = muted }, new TextBlock { Text = "1.5 m", Foreground = muted, [Grid.ColumnProperty] = 1 } } }, applyRange } } };
+        var rangeLabels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
+        rangeLabels.Children.Add(new TextBlock { Text = "0 cm", Foreground = muted });
+        var maxRangeLabel = new TextBlock { Text = "1.5 m", Foreground = muted };
+        Grid.SetColumn(maxRangeLabel, 1);
+        rangeLabels.Children.Add(maxRangeLabel);
+        var rangePanel = new Border
+        {
+            Background = panel,
+            CornerRadius = new Avalonia.CornerRadius(16),
+            Padding = new AvaloniaThickness(14),
+            Child = new StackPanel
+            {
+                Spacing = 7,
+                Children =
+                {
+                    new TextBlock { Text = "ANTENNA RANGE", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal },
+                    new TextBlock { Text = "Ceramic antenna 2 dBi  /  max rated range 1.5 m", FontSize = 12, Foreground = muted, TextWrapping = TextWrapping.Wrap },
+                    rangeValue,
+                    rangeSlider,
+                    rangeLabels
+                }
+            }
+        };
 
         scanStatusText = new TextBlock { Text = "CONNECTING", FontSize = 12, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center };
-        var radarPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(10), Child = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Stretch, Children = { new TextBlock { Text = "LIVE FIELD", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center }, scanStatusText, RadarCanvas, CountText } } };
+        var radarPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(10), Child = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Stretch, Children = { new TextBlock { Text = "LIVE FIELD", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center }, scanStatusText, RadarCanvas } } };
         var tagPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "SELECTED TAG", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, EpcText, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 18, Children = { CrcText, RssiText } } } } };
-        liveCountText = new TextBlock { Text = "0 live tags", FontSize = 18, FontWeight = FontWeight.Bold, Foreground = ink };
-        tagListPanel = new StackPanel { Spacing = 6 };
-        var tagList = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "LIVE TAGS  /  NEAREST FIRST", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, liveCountText, tagListPanel } } };
         var readerActions = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "READER CONTROL", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, scan, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 8, Children = { once, stop } } } } };
         var writeActions = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = "TAG ACTIONS", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, new TextBlock { Text = "Access password", Foreground = muted }, AccessPasswordBox, blank, new TextBlock { Text = "Kill password", Foreground = muted }, KillPasswordBox, kill } } };
 
-        Content = new Border { Background = new SolidColorBrush(Color.Parse("#0C171B")), Child = new ScrollViewer { Content = new StackPanel { Spacing = 12, Margin = new AvaloniaThickness(14, 18), Children = { header, ports, radarPanel, rangePanel, tagPanel, tagList, readerActions, writeActions, LogText } } } };
+        Content = new Border { Background = new SolidColorBrush(Color.Parse("#0C171B")), Child = new ScrollViewer { Content = new StackPanel { Spacing = 12, Margin = new AvaloniaThickness(14, 18), Children = { header, ports, radarPanel, rangePanel, tagPanel, readerActions, writeActions, LogText } } } };
         staleTagTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         staleTagTimer.Tick += (_, _) => RemoveStaleTags();
         staleTagTimer.Start();
@@ -135,7 +153,17 @@ public partial class MainWindow : UserControl
         ? $"{centimeters / 100:0.00} m"
         : $"{centimeters:0} cm";
 
-    private void ApplyRangePower(double centimeters)
+    private async Task ApplyRangePowerDebounced(double centimeters, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(150, cancellationToken);
+            await ApplyRangePower(centimeters);
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task ApplyRangePower(double centimeters)
     {
         if (transport is not { IsOpen: true })
         {
@@ -146,10 +174,10 @@ public partial class MainWindow : UserControl
         var powerDbm = EstimatedPowerDbm(centimeters);
         if (inventoryRunning)
         {
-            Send(Yrm1002Protocol.StopRead());
+            await Send(Yrm1002Protocol.StopRead());
             inventoryRunning = false;
         }
-        Send(Yrm1002Protocol.SetPower(powerDbm));
+        await Send(Yrm1002Protocol.SetPower(powerDbm));
         LogText.Text = $"YRM1003 power set to {powerDbm:0.0} dBm for an estimated {FormatDistance(centimeters)} range.";
     }
 #endif
@@ -318,12 +346,12 @@ public partial class MainWindow : UserControl
         return false;
     }
 
-    private void Send(byte[] frame)
+    private async Task Send(byte[] frame)
     {
         if (transport is not { IsOpen: true }) { LogText.Text = "Connect a reader first."; return; }
-        _ = Task.Run(async () =>
+        await Task.Run(async () =>
         {
-            await sendGate.WaitAsync();
+            await sendGate.WaitAsync().ConfigureAwait(false);
             try
             {
                 transport.Send(frame);
@@ -360,21 +388,16 @@ public partial class MainWindow : UserControl
     {
         if (!tags.TryGetValue(tag.EpcHex, out var state))
         {
-            state = new DetectedTagState { Tag = tag, DetectionCount = 0 };
+            state = new DetectedTagState { Tag = tag };
             tags[tag.EpcHex] = state;
         }
 
         state.Tag = tag;
-        state.DetectionCount++;
         state.LastSeenUtc = DateTime.UtcNow;
         selectedTag = tag;
         EpcText.Text = $"EPC: {tag.EpcHex}";
         CrcText.Text = $"CRC: {tag.CrcHex}";
         RssiText.Text = $"RSSI: {tag.Rssi} dBm";
-        CountText.Text = $"{tags.Count} live tag{(tags.Count == 1 ? string.Empty : "s")}";
-    #if ANDROID
-        UpdateTagList();
-    #endif
         RedrawRadar();
     }
 
@@ -394,25 +417,9 @@ public partial class MainWindow : UserControl
             RssiText.Text = "RSSI: -";
         }
 
-        CountText.Text = $"{tags.Count} live tag{(tags.Count == 1 ? string.Empty : "s")}";
-        UpdateTagList();
         RedrawRadar();
     }
 
-    private void UpdateTagList()
-    {
-        if (tagListPanel is null || liveCountText is null) return;
-        tagListPanel.Children.Clear();
-        liveCountText.Text = $"{tags.Count} live tag{(tags.Count == 1 ? string.Empty : "s")}";
-
-        foreach (var state in tags.Values.OrderByDescending(state => state.Tag.Rssi).ThenBy(state => state.Tag.EpcHex, StringComparer.OrdinalIgnoreCase))
-        {
-            var epc = new TextBlock { Text = state.Tag.EpcHex, FontFamily = "monospace", FontSize = 13, TextWrapping = TextWrapping.Wrap };
-            var detail = new TextBlock { Text = $"{state.Tag.Rssi} dBm   /   {state.DetectionCount} detections", FontSize = 12, Foreground = new SolidColorBrush(Color.Parse("#94AEB4")) };
-            var row = new Border { Background = new SolidColorBrush(Color.Parse("#20343A")), CornerRadius = new Avalonia.CornerRadius(10), Padding = new AvaloniaThickness(10, 8), Child = new StackPanel { Spacing = 3, Children = { epc, detail } } };
-            tagListPanel.Children.Add(row);
-        }
-    }
 #endif
 
     private void RedrawRadar()
