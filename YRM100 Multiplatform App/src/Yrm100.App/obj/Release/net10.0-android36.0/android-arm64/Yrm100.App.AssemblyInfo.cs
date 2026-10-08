@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("YRM100.Reader")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5d6e11e5bdc100d5efb5268061fddbbbd9bf47e8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e922d785c124d04f173944d9bfc316b27a96a5ae")]
 [assembly: System.Reflection.AssemblyProductAttribute("YRM100.Reader")]
 [assembly: System.Reflection.AssemblyTitleAttribute("YRM100.Reader")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

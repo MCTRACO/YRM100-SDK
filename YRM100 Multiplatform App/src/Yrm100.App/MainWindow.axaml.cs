@@ -16,12 +16,15 @@ public partial class MainWindow : UserControl
     private readonly ISerialTransport? transport;
     private readonly FrameParser parser = new(Yrm1002Protocol.Header, Yrm1002Protocol.Footer);
     private readonly Dictionary<string, DetectedTagState> tags = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SemaphoreSlim sendGate = new(1, 1);
     private RfidTag? selectedTag;
     private bool inventoryRunning;
 #if ANDROID
     private StackPanel? tagListPanel;
     private TextBlock? liveCountText;
     private DispatcherTimer? staleTagTimer;
+    private TextBlock? scanStatusText;
+    private CancellationTokenSource startupCancellation = new();
 #endif
 
     private sealed class DetectedTagState
@@ -41,6 +44,9 @@ public partial class MainWindow : UserControl
         transport = CreateTransport();
         if (transport is not null) transport.DataReceived += ReceiveData;
         RefreshPorts(this, new RoutedEventArgs());
+    #if ANDROID
+        _ = StartAndroidReaderAsync();
+    #endif
     }
 
 #if ANDROID
@@ -106,7 +112,8 @@ public partial class MainWindow : UserControl
         applyRange.Click += (_, _) => ApplyRangePower(rangeSlider.Value);
         var rangePanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 7, Children = { new TextBlock { Text = "ANTENNA RANGE", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, new TextBlock { Text = "Ceramic antenna 2 dBi  /  max rated range 1.5 m", FontSize = 12, Foreground = muted, TextWrapping = TextWrapping.Wrap }, rangeValue, rangeSlider, new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = "0 cm", Foreground = muted }, new TextBlock { Text = "1.5 m", Foreground = muted, [Grid.ColumnProperty] = 1 } } }, applyRange } } };
 
-        var radarPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(10), Child = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Stretch, Children = { new TextBlock { Text = "LIVE FIELD", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center }, RadarCanvas, CountText } } };
+        scanStatusText = new TextBlock { Text = "CONNECTING", FontSize = 12, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center };
+        var radarPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(10), Child = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Stretch, Children = { new TextBlock { Text = "LIVE FIELD", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = muted, HorizontalAlignment = HorizontalAlignment.Center }, scanStatusText, RadarCanvas, CountText } } };
         var tagPanel = new Border { Background = panel, CornerRadius = new Avalonia.CornerRadius(16), Padding = new AvaloniaThickness(14), Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "SELECTED TAG", FontSize = 11, FontWeight = FontWeight.Bold, Foreground = teal }, EpcText, new StackPanel { Orientation = AvaloniaOrientation.Horizontal, Spacing = 18, Children = { CrcText, RssiText } } } } };
         liveCountText = new TextBlock { Text = "0 live tags", FontSize = 18, FontWeight = FontWeight.Bold, Foreground = ink };
         tagListPanel = new StackPanel { Spacing = 6 };
@@ -156,6 +163,54 @@ public partial class MainWindow : UserControl
 #endif
     }
 
+#if ANDROID
+    private async Task StartAndroidReaderAsync()
+    {
+        UpdateScanStatus("CONNECTING", "#F2C879");
+        for (var attempt = 0; attempt < 30 && !startupCancellation.IsCancellationRequested; attempt++)
+        {
+            try
+            {
+                var ports = transport?.ListPorts() ?? Array.Empty<string>();
+                if (ports.Count == 1)
+                {
+                    PortBox.SelectedItem = ports[0];
+                    await Task.Run(() => transport!.Open(ports[0]), startupCancellation.Token);
+                    UpdateScanStatus("SCANNING", "#72E0C0");
+                    StartInventory(this, new RoutedEventArgs());
+                    return;
+                }
+
+                UpdateScanStatus(ports.Count == 0 ? "WAITING FOR READER" : "SELECT A READER", "#F2C879");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                UpdateScanStatus("USB PERMISSION NEEDED", "#F2C879");
+            }
+            catch (Exception exception)
+            {
+                UpdateScanStatus("CONNECTION RETRY", "#D76565");
+                LogText.Text = $"Reader connection retry: {exception.Message}";
+            }
+
+            await Task.Delay(1000, startupCancellation.Token);
+        }
+    }
+
+    private void UpdateScanStatus(string text, string color)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (scanStatusText is not null)
+            {
+                scanStatusText.Text = text;
+                scanStatusText.Foreground = new SolidColorBrush(Color.Parse(color));
+            }
+            StatusText.Text = text;
+        });
+    }
+#endif
+
     private void RefreshPorts(object? sender, RoutedEventArgs e)
     {
 #if ANDROID
@@ -171,19 +226,7 @@ public partial class MainWindow : UserControl
     {
 #if ANDROID
         if (PortBox.SelectedItem is not string deviceId) { LogText.Text = "Connect a USB adapter first."; return; }
-        try
-        {
-            transport!.Open(deviceId);
-            StatusText.Text = $"Connected: {deviceId}";
-        }
-        catch (UnauthorizedAccessException)
-        {
-            LogText.Text = "Approve the Android USB permission dialog, then press Connect again.";
-        }
-        catch (Exception exception)
-        {
-            LogText.Text = $"USB connection failed: {exception.Message}";
-        }
+        _ = ConnectAndroidAsync(deviceId);
 #else
         if (PortBox.SelectedItem is not string portName) { LogText.Text = "Select a serial port first."; return; }
     transport!.Open(portName);
@@ -192,10 +235,34 @@ public partial class MainWindow : UserControl
 #endif
     }
 
+#if ANDROID
+    private async Task ConnectAndroidAsync(string deviceId)
+    {
+        UpdateScanStatus("CONNECTING", "#F2C879");
+        try
+        {
+            await Task.Run(() => transport!.Open(deviceId));
+            UpdateScanStatus("CONNECTED", "#72E0C0");
+            LogText.Text = $"Connected to {deviceId}.";
+            StartInventory(this, new RoutedEventArgs());
+        }
+        catch (UnauthorizedAccessException)
+        {
+            UpdateScanStatus("USB PERMISSION NEEDED", "#F2C879");
+            LogText.Text = "Approve the Android USB permission dialog, then press Connect again.";
+        }
+        catch (Exception exception)
+        {
+            UpdateScanStatus("CONNECTION ERROR", "#D76565");
+            LogText.Text = $"USB connection failed: {exception.Message}";
+        }
+    }
+#endif
+
     private void Disconnect(object? sender, RoutedEventArgs e)
     {
 #if ANDROID
-        StatusText.Text = "DISCONNECTED";
+        UpdateScanStatus("STOPPED", "#94AEB4");
 #else
     transport?.Close();
         StatusText.Text = "Disconnected";
@@ -207,12 +274,18 @@ public partial class MainWindow : UserControl
     {
         Send(Yrm1002Protocol.ReadMulti());
         inventoryRunning = true;
+    #if ANDROID
+        UpdateScanStatus("SCANNING", "#72E0C0");
+    #endif
     }
 
     private void StopInventory(object? sender, RoutedEventArgs e)
     {
         Send(Yrm1002Protocol.StopRead());
         inventoryRunning = false;
+    #if ANDROID
+        UpdateScanStatus("STOPPED", "#94AEB4");
+    #endif
     }
 
     private void WriteBlank(object? sender, RoutedEventArgs e)
@@ -247,9 +320,30 @@ public partial class MainWindow : UserControl
 
     private void Send(byte[] frame)
     {
-    if (transport is not { IsOpen: true }) { LogText.Text = "Connect a reader first."; return; }
-    transport.Send(frame);
-        LogText.Text = $"Sent {Convert.ToHexString(frame)}";
+        if (transport is not { IsOpen: true }) { LogText.Text = "Connect a reader first."; return; }
+        _ = Task.Run(async () =>
+        {
+            await sendGate.WaitAsync();
+            try
+            {
+                transport.Send(frame);
+                Dispatcher.UIThread.Post(() => LogText.Text = $"Sent {Convert.ToHexString(frame)}");
+            }
+            catch (Exception exception)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    LogText.Text = $"Reader I/O error: {exception.Message}";
+#if ANDROID
+                    UpdateScanStatus("READER ERROR", "#D76565");
+#endif
+                });
+            }
+            finally
+            {
+                sendGate.Release();
+            }
+        });
     }
 
     private void ReceiveData(object? sender, byte[] bytes)
