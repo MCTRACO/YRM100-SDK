@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using System.Collections.Concurrent;
 using Yrm100.Protocol;
 using AvaloniaButton = Avalonia.Controls.Button;
 using AvaloniaOrientation = Avalonia.Layout.Orientation;
@@ -16,9 +17,11 @@ public partial class MainWindow : UserControl
     private readonly ISerialTransport? transport;
     private readonly FrameParser parser = new(Yrm1002Protocol.Header, Yrm1002Protocol.Footer);
     private readonly Dictionary<string, DetectedTagState> tags = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, RfidTag> pendingTags = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim sendGate = new(1, 1);
     private RfidTag? selectedTag;
     private bool inventoryRunning;
+    private int tagUpdateQueued;
 #if ANDROID
     private DispatcherTimer? staleTagTimer;
     private TextBlock? scanStatusText;
@@ -381,8 +384,27 @@ public partial class MainWindow : UserControl
         {
             var tag = InventoryDecoder.TryDecode(frame);
             if (tag is null) continue;
-            Dispatcher.UIThread.Post(() => ShowTag(tag));
+            pendingTags[tag.EpcHex] = tag;
         }
+
+        if (!pendingTags.IsEmpty && Interlocked.Exchange(ref tagUpdateQueued, 1) == 0)
+            Dispatcher.UIThread.Post(ProcessPendingTags);
+    }
+
+    private void ProcessPendingTags()
+    {
+        var processed = 0;
+        foreach (var pair in pendingTags.ToArray())
+        {
+            if (processed++ >= 128) break;
+            if (pendingTags.TryRemove(pair.Key, out var tag)) ShowTag(tag);
+        }
+
+        RedrawRadar();
+
+        Interlocked.Exchange(ref tagUpdateQueued, 0);
+        if (!pendingTags.IsEmpty && Interlocked.Exchange(ref tagUpdateQueued, 1) == 0)
+            Dispatcher.UIThread.Post(ProcessPendingTags);
     }
 
     private void ShowTag(RfidTag tag)
@@ -399,7 +421,6 @@ public partial class MainWindow : UserControl
         EpcText.Text = $"EPC: {tag.EpcHex}";
         CrcText.Text = $"CRC: {tag.CrcHex}";
         RssiText.Text = $"RSSI: {tag.Rssi} dBm";
-        RedrawRadar();
     }
 
 #if ANDROID

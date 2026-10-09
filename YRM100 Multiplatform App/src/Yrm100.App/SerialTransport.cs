@@ -172,8 +172,10 @@ public sealed class AndroidUsbSerialTransport : IAndroidUsbSerialTransport
     public void Send(ReadOnlySpan<byte> data)
     {
         if (!IsOpen) throw new InvalidOperationException("The USB serial transport is not open.");
+        var currentConnection = connection ?? throw new InvalidOperationException("The USB connection is closed.");
+        var currentEndpoint = writeEndpoint ?? throw new InvalidOperationException("The USB write endpoint is unavailable.");
         var bytes = data.ToArray();
-        var sent = connection!.BulkTransfer(writeEndpoint!, bytes, 0, bytes.Length, 1000);
+        var sent = currentConnection.BulkTransfer(currentEndpoint, bytes, 0, bytes.Length, 1000);
         if (sent != bytes.Length) throw new IOException($"Only {sent} of {bytes.Length} bytes were sent.");
     }
 
@@ -194,11 +196,24 @@ public sealed class AndroidUsbSerialTransport : IAndroidUsbSerialTransport
 
     private void ReadLoop(CancellationToken token)
     {
+        var currentConnection = connection;
+        var currentEndpoint = readEndpoint;
+        if (currentConnection is null || currentEndpoint is null) return;
+
         var buffer = new byte[512];
-        while (!token.IsCancellationRequested && IsOpen)
+        while (!token.IsCancellationRequested)
         {
-            var count = connection!.BulkTransfer(readEndpoint!, buffer, 0, buffer.Length, 500);
-            if (count > 0) DataReceived?.Invoke(this, buffer[..count]);
+            try
+            {
+                var count = currentConnection.BulkTransfer(currentEndpoint, buffer, 0, buffer.Length, 500);
+                if (count > 0)
+                {
+                    try { DataReceived?.Invoke(this, buffer[..count]); }
+                    catch { }
+                }
+            }
+            catch (IOException) { break; }
+            catch (ObjectDisposedException) { break; }
         }
     }
 
