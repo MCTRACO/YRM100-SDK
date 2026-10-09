@@ -1,5 +1,5 @@
-<api type="release" assembly-name="Mono.Android" mvid="dd7e2d831f2047e7945bb0d1e21a027f">
-  <module assembly-name="Mono.Android" mvid="dd7e2d831f2047e7945bb0d1e21a027f" mvid-bytes="gy1+3SAf50eUW7DR4hoCfw==">
+<api type="release" assembly-name="Mono.Android" mvid="1777c633902141af987fa0959b1cd8ae">
+  <module assembly-name="Mono.Android" mvid="1777c633902141af987fa0959b1cd8ae" mvid-bytes="M8Z3FyGQr0GYf6CVmxzYrg==">
     <duplicates>
       <entry java-name="android/window/OnBackInvokedCallback" managed-type-name="Android.Window.IOnBackInvokedCallbackInvoker" token="33554547" />
       <entry java-name="android/window/OnBackInvokedDispatcher" managed-type-name="Android.Window.IOnBackInvokedDispatcherInvoker" token="33554549" />

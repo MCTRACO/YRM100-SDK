@@ -16,6 +16,7 @@
     <RuntimeIdentifier>android-arm64</RuntimeIdentifier>
   </PropertyGroup>
   <ItemGroup>
+    <AndroidResource Include="..\..\img\logo.png" Link="Resources\drawable\logo.png" Condition="$(TargetFramework.Contains('-android'))" />
     <ProjectReference Include="..\Yrm100.Protocol\Yrm100.Protocol.csproj" />
     <PackageReference Include="Avalonia" Version="11.2.3" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />

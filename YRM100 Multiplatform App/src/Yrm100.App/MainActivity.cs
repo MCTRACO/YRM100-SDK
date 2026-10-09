@@ -8,7 +8,7 @@ using Avalonia.Android;
 
 namespace Yrm100.App;
 
-[Activity(Label = "YRM100 Reader", Theme = "@style/Theme.AppCompat.Light.NoActionBar", MainLauncher = true,
+[Activity(Label = "YRM100 Reader", Icon = "@drawable/logo", Theme = "@style/Theme.AppCompat.Light.NoActionBar", MainLauncher = true,
     ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation |
         Android.Content.PM.ConfigChanges.ScreenSize |
         Android.Content.PM.ConfigChanges.UiMode)]

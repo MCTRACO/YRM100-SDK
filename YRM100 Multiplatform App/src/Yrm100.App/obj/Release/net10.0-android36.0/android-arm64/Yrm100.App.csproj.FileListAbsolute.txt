@@ -150,3 +150,5 @@
 /Users/mctraco/Documents/dev/YRM100 SDK/YRM100 Multiplatform App/src/Yrm100.App/obj/Release/net10.0-android36.0/android-arm64/stamp/_GenerateJavaStubs.stamp
 /Users/mctraco/Documents/dev/YRM100 SDK/YRM100 Multiplatform App/src/Yrm100.App/obj/Release/net10.0-android36.0/android-arm64/stamp/_GeneratePackageManagerJava.stamp
 /Users/mctraco/Documents/dev/YRM100 SDK/YRM100 Multiplatform App/src/Yrm100.App/obj/Release/net10.0-android36.0/android-arm64/stamp/_ResolveLibraryProjectImports.stamp
+/Users/mctraco/Documents/dev/YRM100 SDK/YRM100 Multiplatform App/src/Yrm100.App/obj/Release/net10.0-android36.0/android-arm64/case_map.txt
+/Users/mctraco/Documents/dev/YRM100 SDK/YRM100 Multiplatform App/src/Yrm100.App/obj/Release/net10.0-android36.0/android-arm64/res/drawable/logo.png

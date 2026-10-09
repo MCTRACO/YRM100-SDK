@@ -10,8 +10,8 @@
   <uses-feature android:name="android.hardware.usb.host" android:required="true" />
   <permission android:name="YRM100.Reader.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature" />
   <uses-permission android:name="YRM100.Reader.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-  <application android:name="android.app.Application" android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:extractNativeLibs="true" android:label="YRM100.Reader">
-    <activity android:name="crc64276aef7033c9ac6a.MainActivity" android:configChanges="orientation|screenSize|uiMode" android:exported="true" android:label="YRM100 Reader" android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+  <application android:name="android.app.Application" android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:extractNativeLibs="true" android:icon="@drawable/logo" android:label="YRM100.Reader">
+    <activity android:name="crc64276aef7033c9ac6a.MainActivity" android:configChanges="orientation|screenSize|uiMode" android:exported="true" android:icon="@drawable/logo" android:label="YRM100 Reader" android:theme="@style/Theme.AppCompat.Light.NoActionBar">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

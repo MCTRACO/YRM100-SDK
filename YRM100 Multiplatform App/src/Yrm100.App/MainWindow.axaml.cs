@@ -144,6 +144,7 @@ public partial class MainWindow : UserControl
         staleTagTimer.Tick += (_, _) => RemoveStaleTags();
         staleTagTimer.Start();
     }
+
 #endif
 
 #if ANDROID
